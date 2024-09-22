@@ -1,6 +1,7 @@
-const { app, globalShortcut, BrowserWindow, Tray, Menu, ipcMain, dialog } = require('electron/main')
+const { app, globalShortcut, nativeImage, BrowserWindow, Tray, Menu, ipcMain, dialog, shell } = require('electron/main')
 const os = require('os')
 const path = require('path')
+// const shell = require('shell ')
 // vals
 var mainWindow = null;
 var inputFile = null
@@ -55,6 +56,21 @@ const createWindow = () => {
         console.log(files[0])
     })
 
+    // 处理链接跳转
+    mainWindow.webContents.on('will-navigate', (e, url) => {
+        e.preventDefault();
+        toUrl(url);
+    })
+    // 处理 window.open 跳转
+    mainWindow.webContents.setWindowOpenHandler((data) => {
+        // console.log('->', data.url);
+        toUrl(data.url);
+        return {
+            action: 'deny'
+        }
+    })
+
+
     // mainWindow.webContents.openDevTools() // 调试
 
     mainWindow.once('ready-to-show', () => {
@@ -63,6 +79,24 @@ const createWindow = () => {
         }
         mainWindow.show();
     })
+}
+
+function toUrl(url) {
+    dialog.showMessageBox(mainWindow, {
+        type: "warning",
+        title: "go url",
+        icon: nativeImage.createFromPath(path.join(__dirname, 'asserts/img/icons8-markdown-96.png')),
+        message: `Go to : \n${url} ?`,
+        buttons: ["Cancel", "Yes"],
+    }).then((index) => {
+        if (index.response === 0) {
+            return false
+        } else {
+            console.log('->', url);
+            shell.openExternal(url);
+        }
+    })
+
 }
 
 const isMac = process.platform === 'darwin'
@@ -91,8 +125,10 @@ function openFile() {
         ]
     }).then(result => {
         // console.log(result.canceled)
-        console.log('->', result.filePaths[0])
-        readFileData(result.filePaths[0]);
+        if (result.filePaths[0]) {
+            console.log('->', result.filePaths[0])
+            readFileData(result.filePaths[0]);
+        }
     }).catch(err => {
         console.log(err)
     })

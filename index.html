@@ -65,7 +65,7 @@
             margin-top: 20px;
         }
 
-        .center-middle {
+        .tips {
             position: fixed;
             top: calc(50% - 30px);
             left: 0;
@@ -74,6 +74,11 @@
             z-index: 99;
             user-select: none;
             color: #aaa;
+        }
+
+        .tips:hover {
+            cursor: pointer;
+            color: #228B22;
         }
 
         .btn-lg {
@@ -97,7 +102,7 @@
             <span class="title" id="title"></span>
         </div> -->
         <div class="content markdown-body" id="marked"> </div>
-        <span class="center-middle" id="tips">click to open a markdown file </span>
+        <span class="tips" id="tips">click to open a markdown file </span>
     </div>
     <script src="./asserts/js/marked.min.js"></script>
     <script>
@@ -131,7 +136,7 @@
             // setTile(fileData['path'].split('/').pop());
         })
 
-        document.getElementById("marked").onclick = () => {
+        document.getElementById("tips").onclick = () => {
             if (document.getElementById('marked').innerText.replace(/^s+|s+$/g, "") == '')
                 window.electronAPI.openFile();
         }
