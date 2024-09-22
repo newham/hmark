@@ -1,0 +1,44 @@
+{
+  "name": "hmark",
+  "version": "0.0.1",
+  "description": "simple markdown",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "npm run test",
+    "build_mac": "electron-builder build --mac --arm64"
+  },
+  "keywords": [
+    "markdown"
+  ],
+  "build": {
+    "productName": "hmark",
+    "appId": "top.newham.hmark",
+    "directories": {
+      "output": "build"
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "md"
+        ],
+        "description": "Markdown File",
+        "role": "Viewer",
+        "isPackage": false
+      }
+    ],
+    "mac": {
+      "icon": "./asserts/img/icon.icns",
+      "target": {
+        "target": "dir",
+        "arch": "arm64"
+      }
+    }
+  },
+  "author": "newham",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^32.1.2",
+    "electron-builder": "^25.0.5"
+  }
+}

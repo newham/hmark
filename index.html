@@ -1,0 +1,159 @@
+<html>
+
+<head>
+    <link rel="icon" href="./asserts/img/icons8-markdown-96.png" type="image/x-icon" />
+    <!--Import Google Icon Font-->
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+    <!-- Compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="asserts/css/materialize.min.css">-->
+    <link rel="stylesheet" href="asserts/css/macos.css">
+    <link rel="stylesheet" href="asserts/css/github-markdown.css">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .head-bar {
+            background: #eee;
+            height: 38px;
+            -webkit-app-region: drag;
+            text-align: center;
+            line-height: 38px;
+            border-bottom: 1px #ccc solid;
+        }
+
+        .right-menu {
+            position: fixed;
+            top: 0;
+            right: 10px;
+            height: 38px;
+            line-height: 38px;
+            /* background: red; */
+        }
+
+        .main {
+            display: flex;
+            flex-flow: column nowrap;
+            height: 100%;
+        }
+
+        .title {
+            color: grey;
+            /* overflow: hidden; */
+            margin-left: 78px;
+            margin-right: 78px;
+            user-select: none;
+            font-size: 13px;
+        }
+
+        .content {
+            /* background: #C7EDCC; */
+            flex: 1;
+            padding: 10px 10px;
+            overflow-y: auto;
+            word-break: break-all !important;
+        }
+
+        .center {
+            display: block;
+            margin: auto;
+            /* width: 100px; */
+            margin-top: 20px;
+        }
+
+        .center-middle {
+            position: fixed;
+            top: calc(50% - 30px);
+            left: 0;
+            text-align: center;
+            width: 100%;
+            z-index: 99;
+            user-select: none;
+            color: #aaa;
+        }
+
+        .btn-lg {
+            font-size: 14px;
+        }
+
+        .btn-menu {
+            position: fixed;
+            right: 10px;
+            top: 5px;
+            z-index: 99;
+            border-radius: 5px;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <!-- <div class="head-bar">
+            <span class="title" id="title"></span>
+        </div> -->
+        <div class="content markdown-body" id="marked"> </div>
+        <span class="center-middle" id="tips">click to open a markdown file </span>
+    </div>
+    <script src="./asserts/js/marked.min.js"></script>
+    <script>
+        function setMarked(data) {
+            document.getElementById('marked').innerHTML = marked.parse(data);
+            document.getElementById("tips").style.display = 'none';
+        }
+
+        // function setTile(title) {
+        //     document.getElementById('title').innerHTML = title;
+        // }
+
+        function setBg(rgb) {
+            // 使用getElementById方法根据ID获取div元素  
+            var div = document.getElementById(marked);
+            // 检查是否成功获取到div元素  
+            if (div) {
+                // 如果成功获取到，则修改其背景颜色  
+                div.style.backgroundColor = color;
+            } else {
+                // 如果没有找到对应的div，可以打印一条错误消息到控制台  
+                console.error('未找到ID为' + 'marked' + '的div元素');
+            }
+        }
+
+        // setMarked('# Marked in browser\n\nRendered by **marked**.')
+
+        window.electronAPI.onOpenFileData((fileData) => {
+            // console.log(data)
+            setMarked(fileData['data']);
+            // setTile(fileData['path'].split('/').pop());
+        })
+
+        document.getElementById("marked").onclick = () => {
+            if (document.getElementById('marked').innerText.replace(/^s+|s+$/g, "") == '')
+                window.electronAPI.openFile();
+        }
+
+        let drag = document.getElementById("marked")
+        //此方法删除不行
+        drag.addEventListener("dragover", (e) => {
+            // 用来hack某些兼容性问题
+            e.dataTransfer.dropEffect = "copy";
+            e.stopPropagation();
+            e.preventDefault();
+        }, false);
+        drag.addEventListener("drop", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(e.dataTransfer.files[0].name)
+            // if (e.dataTransfer.files[0].path) {
+            //     let path = e.dataTransfer.files[0].path
+            //     console.log(path);
+            // }
+        }, false);
+    </script>
+</body>
+
+</html>
