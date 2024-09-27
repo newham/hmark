@@ -134,6 +134,44 @@ function openFile() {
     })
 }
 
+const RGB_GREEN = '#C7EDCC'
+const RGB_WHITE = '#fff'
+const THEME_GREEN = 'Eye Protection Theme'
+const THEME_DEFAULT = 'Default Theme'
+const THEME_DARK = 'Dark Theme'
+var themeMenu = [
+    {
+        label: THEME_GREEN,
+        type: 'checkbox',
+        checked: false,
+        click: () => {
+            for (const i in BrowserWindow.getAllWindows()) {
+                BrowserWindow.getAllWindows()[i].webContents.send('theme', THEME_GREEN);
+            }
+        }
+    },
+    {
+        label: THEME_DEFAULT,
+        type: 'checkbox',
+        checked: false,
+        click: () => {
+            for (const i in BrowserWindow.getAllWindows()) {
+                BrowserWindow.getAllWindows()[i].webContents.send('theme', THEME_DEFAULT);
+            }
+        }
+    },
+    {
+        label: THEME_DARK,
+        type: 'checkbox',
+        checked: false,
+        click: () => {
+            for (const i in BrowserWindow.getAllWindows()) {
+                BrowserWindow.getAllWindows()[i].webContents.send('theme', THEME_DARK);
+            }
+        }
+    }
+]
+
 function buildMenu() {
     const template = [
         // { role: 'appMenu' }
@@ -173,8 +211,16 @@ function buildMenu() {
                 // { type: 'separator' },
                 // { role: 'cut' },
                 { role: 'copy' },
+                // { type: 'separator' },
                 // { role: 'paste' }
             ]
+        },
+        {
+            label: 'View',
+            submenu: [{
+                label: 'Theme',
+                submenu: themeMenu
+            }]
         },
         {
             role: 'help',
@@ -228,4 +274,17 @@ ipcMain.on('on-drag-start', (event, filePath) => {
     //     icon: iconName
     // })
     console.log(filePath)
+})
+
+ipcMain.on('theme-changed', (event, theme) => {
+    console.log('->', 'theme:', theme)
+    for (let i in themeMenu) {
+        if (themeMenu[i]['label'] == theme) {
+            themeMenu[i]['checked'] = true;
+        } else {
+            themeMenu[i]['checked'] = false;
+        }
+    }
+
+    buildMenu();
 })

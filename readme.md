@@ -1,6 +1,12 @@
 # hmark
 
-V0.0.1
+V1.0.0
 
-a simple but free Markdown app
+A simple but free Markdown app for MacOS users!
 
+Now you can uninstall other unfree software for markdown.
+
+## Thanks to
+* github-markdown-css
+* electron
+* marked.js

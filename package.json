@@ -1,6 +1,6 @@
 {
   "name": "hmark",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "simple markdown",
   "main": "main.js",
   "scripts": {
@@ -24,7 +24,8 @@
         ],
         "description": "Markdown File",
         "role": "Viewer",
-        "isPackage": false
+        "isPackage": false,
+        "icon": "./asserts/img/icons8-file-md-120.icns"
       }
     ],
     "mac": {
