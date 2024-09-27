@@ -31,7 +31,7 @@
     "mac": {
       "icon": "./asserts/img/icon.icns",
       "target": {
-        "target": "dir",
+        "target": "dmg",
         "arch": "arm64"
       }
     }
