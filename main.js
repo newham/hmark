@@ -71,7 +71,9 @@ const createWindow = () => {
     })
 
 
-    // mainWindow.webContents.openDevTools() // 调试
+    if (process.argv.includes('-t')) {
+        mainWindow.webContents.openDevTools() // 调试
+    }
 
     mainWindow.once('ready-to-show', () => {
         if (inputFile) {
@@ -134,8 +136,6 @@ function openFile() {
     })
 }
 
-const RGB_GREEN = '#C7EDCC'
-const RGB_WHITE = '#fff'
 const THEME_GREEN = 'Eye Protection Theme'
 const THEME_DEFAULT = 'Default Theme'
 const THEME_DARK = 'Dark Theme'
@@ -190,11 +190,13 @@ function buildMenu() {
             submenu: [
                 {
                     label: 'Open',
+                    accelerator: 'command+o',
                     click: () => {
                         openFile()
                     },
                 }, {
                     label: 'New Window',
+                    accelerator: 'command+n',
                     click: () => {
                         inputFile = null;
                         createWindow();
@@ -220,7 +222,30 @@ function buildMenu() {
             submenu: [{
                 label: 'Theme',
                 submenu: themeMenu
-            }]
+            },
+            {
+                label: 'Font',
+                submenu: [
+                    {
+                        label: 'Font +',
+                        click: () => {
+                            for (const i in BrowserWindow.getAllWindows()) {
+                                BrowserWindow.getAllWindows()[i].webContents.send('font-size', 1);
+                            }
+                        },
+                        accelerator: 'command+='
+                    }, {
+                        label: 'Font -',
+                        click: () => {
+                            for (const i in BrowserWindow.getAllWindows()) {
+                                BrowserWindow.getAllWindows()[i].webContents.send('font-size', -1);
+                            }
+                        },
+                        accelerator: 'command+-'
+                    }
+                ]
+            },
+            ]
         },
         {
             role: 'help',
@@ -277,7 +302,7 @@ ipcMain.on('on-drag-start', (event, filePath) => {
 })
 
 ipcMain.on('theme-changed', (event, theme) => {
-    console.log('->', 'theme:', theme)
+    // console.log('->', 'theme:', theme)
     for (let i in themeMenu) {
         if (themeMenu[i]['label'] == theme) {
             themeMenu[i]['checked'] = true;

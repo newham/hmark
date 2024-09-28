@@ -152,6 +152,7 @@
                 loadCSS('asserts/css/github-markdown.css')
                 setBg('#fff')
             }
+            console.log('->', 'theme:', theme);
             localStorage.setItem('theme', theme)
             window.electronAPI.themeChanged(theme);
         }
@@ -169,6 +170,7 @@
                 // 如果成功获取到，则修改其背景颜色  
                 div.style.backgroundColor = rgb;
                 localStorage.setItem('bg-rgb', rgb)
+                console.log('->', 'rgb:', rgb);
             } else {
                 // 如果没有找到对应的div，可以打印一条错误消息到控制台  
                 console.error('未找到ID为' + 'marked' + '的div元素');
@@ -185,14 +187,25 @@
 
         window.electronAPI.onBgChange((rgb) => {
             // console.log(data)
-            console.log('->', 'rgb:', rgb);
             setBg(rgb)
         })
 
         window.electronAPI.onThemeChange((theme) => {
             // console.log(data)
-            console.log('->', 'theme:', theme);
             setTheme(theme)
+        })
+
+        function setFont(add = 0) {
+            nowFontSize = localStorage.getItem('font-size') ? parseInt(localStorage.getItem('font-size')) : 16; // 默认字体大小为16px  
+            if (nowFontSize + add <= 24 && nowFontSize + add >= 8) {
+                document.getElementById('marked').style.fontSize = nowFontSize + add + 'px';
+                localStorage.setItem('font-size', nowFontSize + add);
+                console.log('->', 'font', nowFontSize + add)
+            }
+        }
+
+        window.electronAPI.onFontSizeChange((add) => {
+            setFont(add);
         })
 
 
@@ -222,6 +235,7 @@
         window.addEventListener("load", (event) => {
             setBg()
             setTheme()
+            setFont()
         });
     </script>
 </body>
