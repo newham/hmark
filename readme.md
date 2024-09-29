@@ -1,6 +1,6 @@
 # hmark
 
-V1.0.0
+V1.1.0
 
 A simple but free Markdown app for MacOS users!
 

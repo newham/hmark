@@ -81,6 +81,10 @@
             color: #228B22;
         }
 
+        button {
+            cursor: pointer;
+        }
+
         .btn-lg {
             font-size: 14px;
         }
@@ -93,6 +97,31 @@
             border-radius: 5px;
             padding: 5px;
         }
+
+        .tool-bar {
+            display: none;
+            position: fixed;
+            z-index: 99;
+            padding: 5px;
+            left: 0;
+            top: 0;
+            height: 100%;
+            /* background: #ccc; */
+            flex-direction: column;
+            /* 设置为竖直排列 */
+        }
+
+        .tool-bar button {
+            margin: 5px;
+            /* 每个按钮之间增加一点间距（可选） */
+            min-height: 30px;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        /* .content-edit textarea {} */
     </style>
 </head>
 
@@ -102,13 +131,32 @@
             <span class="title" id="title"></span>
         </div> -->
         <div class="content markdown-body" id="marked"> </div>
+
+        <textarea class="content markdown-body" style="display:none;" id="edit"></textarea>
+
         <span class="tips" id="tips">click to open a markdown file </span>
+        <div class="tool-bar" id="tool-bar">
+            <button id="btn-close">↖</button>
+            <button id="btn-save">✓</button>
+        </div>
+
     </div>
     <script src="./asserts/js/marked.min.js"></script>
     <script>
-        function setMarked(data) {
-            document.getElementById('marked').innerHTML = marked.parse(data);
+        var fileData = null;
+        var src = null;
+
+        function setMarked() {
+            if (!fileData) {
+                return false
+            }
+            document.getElementById('marked').innerHTML = marked.parse(fileData['data']);
             document.getElementById("tips").style.display = 'none';
+            //show
+            document.getElementById('edit').value = '';
+            document.getElementById('edit').style.display = 'none';
+            document.getElementById('marked').style.display = '';
+            document.getElementById('tool-bar').style.display = 'none';
         }
 
         // function setTile(title) {
@@ -164,16 +212,19 @@
                 }
             }
             // 使用getElementById方法根据ID获取div元素  
-            var div = document.getElementById('marked');
-            // 检查是否成功获取到div元素  
-            if (div) {
-                // 如果成功获取到，则修改其背景颜色  
-                div.style.backgroundColor = rgb;
-                localStorage.setItem('bg-rgb', rgb)
-                console.log('->', 'rgb:', rgb);
-            } else {
-                // 如果没有找到对应的div，可以打印一条错误消息到控制台  
-                console.error('未找到ID为' + 'marked' + '的div元素');
+            let divNames = ['marked', 'edit']
+            for (i in divNames) {
+                let div = document.getElementById(divNames[i]);
+                // 检查是否成功获取到div元素  
+                if (div) {
+                    // 如果成功获取到，则修改其背景颜色  
+                    div.style.backgroundColor = rgb;
+                    localStorage.setItem('bg-rgb', rgb)
+                    console.log('->', 'rgb:', rgb);
+                } else {
+                    // 如果没有找到对应的div，可以打印一条错误消息到控制台  
+                    console.error('未找到ID为' + 'marked' + '的div元素');
+                }
             }
         }
 
@@ -181,7 +232,8 @@
 
         window.electronAPI.onOpenFileData((fileData) => {
             // console.log(data)
-            setMarked(fileData['data']);
+            window.fileData = fileData
+            setMarked();
             // setTile(fileData['path'].split('/').pop());
         })
 
@@ -196,9 +248,12 @@
         })
 
         function setFont(add = 0) {
-            nowFontSize = localStorage.getItem('font-size') ? parseInt(localStorage.getItem('font-size')) : 16; // 默认字体大小为16px  
+            let nowFontSize = localStorage.getItem('font-size') ? parseInt(localStorage.getItem('font-size')) : 16; // 默认字体大小为16px  
             if (nowFontSize + add <= 24 && nowFontSize + add >= 8) {
-                document.getElementById('marked').style.fontSize = nowFontSize + add + 'px';
+                let divNames = ['marked', 'edit']
+                for (i in divNames) {
+                    document.getElementById(divNames[i]).style.fontSize = nowFontSize + add + 'px';
+                }
                 localStorage.setItem('font-size', nowFontSize + add);
                 console.log('->', 'font', nowFontSize + add)
             }
@@ -208,10 +263,51 @@
             setFont(add);
         })
 
+        function setEdit() {
+            if (fileData) {
+                console.log('->', 'edit');
+                document.getElementById('marked').style.display = 'none';
+                document.getElementById('edit').value = fileData['data'];
+                document.getElementById('edit').style.display = '';
+                document.getElementById('tool-bar').style.display = 'flex';
+                if (!src) {
+                    src = fileData['data'];
+                }
+            }
+        }
+
+        window.electronAPI.onEdit(() => {
+            setEdit()
+        })
+
 
         document.getElementById("tips").onclick = () => {
             if (document.getElementById('marked').innerText.replace(/^s+|s+$/g, "") == '')
                 window.electronAPI.openFile();
+        }
+
+        document.getElementById("btn-close").onclick = () => {
+            saveTmp();
+            setMarked();
+        }
+
+        function saveTmp() {
+            window.fileData['data'] = document.getElementById('edit').value;
+        }
+
+        function saveEdit() {
+            console.log('->', 'save edit')
+            saveTmp();
+            window.electronAPI.saveEdit(window.fileData);
+        }
+
+        document.getElementById("btn-save").onclick = () => {
+            saveEdit()
+        }
+
+        document.getElementById("edit").oninput = () => {
+            // console.log('->', 'changed')
+            window.electronAPI.editChanged(document.getElementById('edit').value != window.src);
         }
 
         let drag = document.getElementById("marked")
@@ -233,7 +329,6 @@
         }, false);
 
         window.addEventListener("load", (event) => {
-            setBg()
             setTheme()
             setFont()
         });

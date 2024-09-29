@@ -88,7 +88,7 @@ function toUrl(url) {
         type: "warning",
         title: "go url",
         icon: nativeImage.createFromPath(path.join(__dirname, 'asserts/img/icons8-markdown-96.png')),
-        message: `Go to : \n${url} ?`,
+        message: `open : \n${url} ?`,
         buttons: ["Cancel", "Yes"],
     }).then((index) => {
         if (index.response === 0) {
@@ -107,11 +107,16 @@ ipcMain.on('open-file', (_event, value) => {
     openFile()
 })
 
+var fileData = null;
+
 // 不能和readFile重名！否则不能执行
 function readFileData(path) {
     try {
+        if (!fs.existsSync(path)) return false;
+        console.log('->', 'open', path)
         let data = fs.readFileSync(path, 'utf8');
-        BrowserWindow.getFocusedWindow().webContents.send('file-data', { path: path, data: data });
+        fileData = { 'path': path, 'data': data }
+        BrowserWindow.getFocusedWindow().webContents.send('file-data', fileData);
         BrowserWindow.getFocusedWindow().setTitle(path.split('/').pop());
         inputFile = path;
     } catch (err) {
@@ -128,7 +133,6 @@ function openFile() {
     }).then(result => {
         // console.log(result.canceled)
         if (result.filePaths[0]) {
-            console.log('->', result.filePaths[0])
             readFileData(result.filePaths[0]);
         }
     }).catch(err => {
@@ -208,13 +212,22 @@ function buildMenu() {
         {
             label: 'Edit',
             submenu: [
-                // { role: 'undo' },
-                // { role: 'redo' },
-                // { type: 'separator' },
-                // { role: 'cut' },
+                { role: 'undo' },
+                { role: 'redo' },
+                { type: 'separator' },
+                { role: 'selectAll' },
+                { type: 'separator' },
+                { role: 'cut' },
                 { role: 'copy' },
-                // { type: 'separator' },
-                // { role: 'paste' }
+                { role: 'paste' },
+                { type: 'separator' },
+                {
+                    label: 'Edit Mode',
+                    accelerator: 'command+e',
+                    click: () => {
+                        BrowserWindow.getFocusedWindow().webContents.send('edit', '');
+                    }
+                },
             ]
         },
         {
@@ -312,4 +325,34 @@ ipcMain.on('theme-changed', (event, theme) => {
     }
 
     buildMenu();
+})
+
+/**
+ * 保存文本内容到指定路径的文件中
+ * @param {string} filePath - 保存文件的路径
+ * @param {string} content - 保存到文件中的文本内容
+ */
+function saveTextToFile(filePath, content) {
+    fs.writeFile(filePath, content, 'utf8', (err) => {
+        if (err) {
+            console.error('-> error:', err);
+        } else {
+            readFileData(filePath);
+        }
+    });
+}
+
+ipcMain.on('save-edit', (event, fileData) => {
+    console.log('->', 'save', fileData['path'])
+    saveTextToFile(fileData['path'], fileData['data'])
+})
+
+ipcMain.on('edit-change', (event, isChange) => {
+    // console.log('->', 'save:', fileData['path'])
+    if (isChange) {
+        BrowserWindow.getFocusedWindow().setTitle('*' + fileData['path'].split('/').pop());
+    } else {
+        BrowserWindow.getFocusedWindow().setTitle(fileData['path'].split('/').pop());
+    }
+
 })
